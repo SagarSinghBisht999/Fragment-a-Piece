@@ -115,7 +115,7 @@ public class EnemyBase : MonoBehaviour
     private bool IsWallAhead()
     {
         
-         int mask = ~LayerMask.GetMask("Enemy","Player");
+         int mask = LayerMask.GetMask("Ground","Platform");
         RaycastHit2D hit = Physics2D.Raycast(
             _col.bounds.center,
             Vector2.right * _direction,
@@ -128,12 +128,13 @@ public class EnemyBase : MonoBehaviour
 
     private bool IsEdgeAhead()
     {
+        int maske = LayerMask.GetMask("Ground","Platform");
         Vector2 origin = new Vector2(
             transform.position.x + _direction * (_col.bounds.size.x * 0.5f + 0.05f),
             transform.position.y - _col.bounds.size.y * 0.5f
         );
 
-        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, edgeCheckDist);
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, edgeCheckDist,maske);
         return hit.collider == null;
     }
 
@@ -175,7 +176,7 @@ public class EnemyBase : MonoBehaviour
     private bool IsStomped(Collision2D collision)
     {
         bool fallingDown = collision.rigidbody != null &&
-                           collision.rigidbody.linearVelocity.y < -0.1f;
+                           collision.rigidbody.linearVelocity.y < 0.1f;
 
         float playerBottom = collision.collider.bounds.min.y;
         float enemyTop     = _col.bounds.max.y;

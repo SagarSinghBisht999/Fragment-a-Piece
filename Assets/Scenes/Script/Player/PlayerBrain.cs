@@ -143,6 +143,7 @@ public void Revive()
         sr.enabled = true;
 
     _logger.Health("Player revived", gameObject);
+    GetComponentInChildren<HealthDisplay>()?.OnPlayerRevived();
 }
 //    private void OnPlayerDeath()
 //   {

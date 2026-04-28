@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CameraFollow : MonoBehaviour
+public class PLayersCameraFollow : MonoBehaviour
 {
     [Header("Players")]
     [SerializeField] private Transform _player1;

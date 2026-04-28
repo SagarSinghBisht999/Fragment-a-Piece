@@ -66,60 +66,59 @@ public class PlayerLocomotion : MonoBehaviour
 
     #region Ground Detection
 
-    public void CheckGround(PlayerState state)
+public void CheckGround(PlayerState state)
+{
+    bool originalQueriesHitTriggers = Physics2D.queriesHitTriggers;
+    Physics2D.queriesHitTriggers = false;
+
+    Physics2D.queriesStartInColliders = false;
+
+    bool wasGrounded = state.IsGrounded;
+
+    bool groundHit = Physics2D.CapsuleCast(
+        _col.bounds.center,
+        _col.size,
+        _col.direction,
+        0f,
+        Vector2.down,
+        grounderDistance,
+        groundLayer
+    );
+
+    bool ceilingHit = Physics2D.CapsuleCast(
+        _col.bounds.center,
+        _col.size,
+        _col.direction,
+        0f,
+        Vector2.up,
+        grounderDistance,
+        groundLayer
+    );
+
+    if (ceilingHit) state.Velocity.y = Mathf.Min(0, state.Velocity.y);
+
+    if (!wasGrounded && groundHit)
     {
-        // Prevents capsule detecting its own collider — critical for reliability
-        Physics2D.queriesStartInColliders = false;
-
-        bool wasGrounded = state.IsGrounded;
-
-        bool groundHit = Physics2D.CapsuleCast(
-            _col.bounds.center,
-            _col.size,
-            _col.direction,
-            0f,
-            Vector2.down,
-            grounderDistance,
-            groundLayer
-        );
-
-        bool ceilingHit = Physics2D.CapsuleCast(
-            _col.bounds.center,
-            _col.size,
-            _col.direction,
-            0f,
-            Vector2.up,
-            grounderDistance,
-            groundLayer
-        );
-
-        // Ceiling hit — immediately cut upward velocity
-        if (ceilingHit)
-            state.Velocity.y = Mathf.Min(0, state.Velocity.y);
-
-        // Just landed
-        if (!wasGrounded && groundHit)
-        {
-            state.IsGrounded     = true;
-            state.CoyoteUsable   = true;
-            state.BufferUsable   = true;
-            state.EndedJumpEarly = false;
-            _logger?.Ground($"Landed — impact: {state.Velocity.y:F2}");
-        }
-        // Just left ground
-        else if (wasGrounded && !groundHit)
-        {
-            state.IsGrounded      = false;
-            state.FrameLeftGround = state.Time;
-            _logger?.Ground("Left ground — coyote started");
-        }
-        else
-        {
-            state.IsGrounded = groundHit;
-        }
-
-        Physics2D.queriesStartInColliders = true;
+        state.IsGrounded     = true;
+        state.CoyoteUsable   = true;
+        state.BufferUsable   = true;
+        state.EndedJumpEarly = false;
+        _logger?.Ground($"Landed — impact: {state.Velocity.y:F2}");
     }
+    else if (wasGrounded && !groundHit)
+    {
+        state.IsGrounded      = false;
+        state.FrameLeftGround = state.Time;
+        _logger?.Ground("Left ground — coyote started");
+    }
+    else
+    {
+        state.IsGrounded = groundHit;
+    }
+
+    Physics2D.queriesStartInColliders = true;
+    Physics2D.queriesHitTriggers = originalQueriesHitTriggers;
+}
 
     #endregion
 
