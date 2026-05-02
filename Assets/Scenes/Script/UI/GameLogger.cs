@@ -5,10 +5,12 @@
 // This is the architectural fix from the video.
 // -------------------------------------------------------
 using UnityEngine;
+using System.Runtime.CompilerServices;
 
 public class GameLogger
 {
     public static GameLogger Instance { get; private set; }
+
 
     #region Category Toggles — turn off entire groups here
 
@@ -20,7 +22,7 @@ public class GameLogger
     public bool LogMovement   = false;
     public bool LogEnemy      = true;
     public bool LogHealth     = true;
-
+    public bool LogFromm     = true;
     #endregion
 
     public GameLogger()
@@ -29,6 +31,20 @@ public class GameLogger
     }
 
     #region Log Methods — one per category
+    public void LogFrom(string message, GameObject context = null,
+                    [CallerFilePath] string scriptPath = "",
+                    [CallerMemberName] string methodName = "")
+   {
+    if(!LogFromm) return; // example for movement category
+    // Extract just the file name from the full path
+    string scriptName = System.IO.Path.GetFileNameWithoutExtension(scriptPath);
+    
+    // Get the GameObject name (or "Unknown")
+    string objectName = context != null ? context.name : "Unknown";
+    
+    // Output: [ScriptName] [GameObject] [Method] Message
+    Debug.Log($"[{scriptName}] [{objectName}] [{methodName}] {message}");
+  }
 
     public void Input(string message)
     {
@@ -60,7 +76,7 @@ public class GameLogger
     if (!LogHealth) return;
     string name = context != null ? context.name : "Unknown";
     Debug.Log($"[HEALTH] [{name}] {message}");
-}
+   }
     public void Movement(string message)
     {
         if (LogMovement) Debug.Log($"[MOVEMENT] {message}");

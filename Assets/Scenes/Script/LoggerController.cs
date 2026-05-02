@@ -1,16 +1,16 @@
 using UnityEngine;
 
-public class LoggerControl : MonoBehaviour
+public class LoggerController : MonoBehaviour
 {
     [Header("Log Category Toggles")]
-    public bool input    = true;
-    public bool ground   = true;
-    public bool jump     = true;
+    public bool input    = false;
+    public bool ground   = false;
+    public bool jump     = false;
     public bool gravity  = false;
     public bool bounce   = true;
     public bool movement = false;
-    public bool enemy    = true;
-    public bool health   = true;
+    public bool enemy    = false;
+    public bool health   = false;
 
     private void OnValidate()
     {

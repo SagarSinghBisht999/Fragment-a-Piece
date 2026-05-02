@@ -15,6 +15,8 @@ public class EnemyBase : MonoBehaviour
     [Header("Stomp")]
     [SerializeField] private float bounceForce    = 20f;
     [SerializeField] private float stompTolerance = 0.3f;
+    [Header("Knock")]
+    [SerializeField] private float KnockBackForce    = 12f;
 
     #endregion
 
@@ -169,7 +171,7 @@ public class EnemyBase : MonoBehaviour
             Vector2 knockbackDir = (collision.transform.position - transform.position).normalized;
             knockbackDir.y = 0.5f;
             knockbackDir.Normalize();
-            player.TakeDamage(1, knockbackDir);
+            player.TakeDamage(KnockBackForce,1, knockbackDir);
         }
     }
 

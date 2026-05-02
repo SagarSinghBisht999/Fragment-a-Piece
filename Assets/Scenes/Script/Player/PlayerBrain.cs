@@ -263,12 +263,13 @@ public class PlayerBrain : MonoBehaviour
     private bool             _hasBeenRevived = false;
 
     #endregion
+    private Animator _animator;
 
     #region Shared State and Logger
 
     private PlayerState _state;
     private GameLogger  _logger;
-    [SerializeField] private float _knockbackForce = 78f;
+
 
     #endregion
 
@@ -304,6 +305,7 @@ public class PlayerBrain : MonoBehaviour
         _locomotion = GetComponent<PlayerLocomotion>();
         _health     = GetComponent<Health>();
         _shooter    = GetComponent<Shooter>();
+        _animator   =GetComponentInChildren<Animator>();
 
         _input.Initialize(_logger);
         _locomotion.Initialize(_logger);
@@ -313,7 +315,7 @@ public class PlayerBrain : MonoBehaviour
         if (_health != null)
             _health.onDeath.AddListener(OnPlayerDeath);
 
-        _logger.Warning("PlayerBrain initialized");
+        _logger.LogFrom("PlayerBrain initialized", gameObject);
     }
 
     private void Update()
@@ -321,14 +323,16 @@ public class PlayerBrain : MonoBehaviour
         _input.Tick(_state);
 
         if (_playerInput.GetInteractPressed())
+           { 
             InteractWithWorld();
-
+           }
         if (_shooter != null && _shooter.enabled && _playerInput.GetFireHeld())
         {
             Transform firePoint = transform.Find("GunPivot/GunVisual/FirePoint");
             Vector2 spawnPos = firePoint != null ? firePoint.position : (Vector2)transform.position;
             _shooter.Fire(spawnPos, _playerInput.GetAimDirection(), gameObject);
         }
+
     }
 
     private void FixedUpdate()
@@ -341,6 +345,7 @@ public class PlayerBrain : MonoBehaviour
         _locomotion.HandleJump(_state);
         _locomotion.HandleGravity(_state);
         _locomotion.HandleBounce(_state);
+        _locomotion.UpdateAnimation(_state);
         _locomotion.ApplyVelocity(_state);
     }
 
@@ -357,17 +362,18 @@ public class PlayerBrain : MonoBehaviour
         _logger.Bounce($"Bounce received by Brain — force: {force}");
     }
 
-    public void TakeDamage(int amount, Vector2? knockbackDirection = null)
+    public void TakeDamage(float KnockBackForce,int amount, Vector2? knockbackDirection = null)
     {
         if (_state.IsDead) return;
 
         _health?.TakeDamage(amount);
+        _animator?.SetTrigger("Hurt");
 
         if (knockbackDirection.HasValue)
         {
             Rigidbody2D rb = GetComponent<Rigidbody2D>();
             if (rb != null)
-                rb.linearVelocity = knockbackDirection.Value * _knockbackForce;
+                rb.linearVelocity = knockbackDirection.Value * KnockBackForce;
             _logger.Health($"Took {amount} damage + knockback", gameObject);
         }
         else
@@ -436,7 +442,7 @@ public class PlayerBrain : MonoBehaviour
     private void OnPlayerDeath()
     {
         _state.IsDead = true;
-
+        _animator?.SetTrigger("Die");
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         Collider2D col = GetComponent<Collider2D>();
 

@@ -105,6 +105,7 @@ MonoBehaviour:
   edgeCheckDist: 1
   bounceForce: 10
   stompTolerance: 0.6
+  KnockBackForce: 8.15
 --- !u!61 &5419625042485768196
 BoxCollider2D:
   m_ObjectHideFlags: 0

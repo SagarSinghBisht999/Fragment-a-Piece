@@ -10,7 +10,7 @@ public class Projectile : MonoBehaviour
     private float _gravityScale;
      private int _damage;
      private int _pierceCount;
-     private float _lifetime;
+     [SerializeField]private float _lifetime = 10f;
 
     private Rigidbody2D _rb;
     private GameObject _shooter;
@@ -21,6 +21,7 @@ public class Projectile : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody2D>();
         _logger = GameLogger.Instance ?? new GameLogger();
+        Debug.Log($"Projectile spawned! Lifetime: {_lifetime}, Speed: {_speed}, Damage: {_damage}");
     }
 
     public void Initialize(Vector2 direction, float speed, float gravityScale, int damage,

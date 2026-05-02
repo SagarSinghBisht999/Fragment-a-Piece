@@ -4,7 +4,8 @@ using UnityEngine;
 public class PlayerLocomotion : MonoBehaviour
 {
     #region Settings
-
+    private Animator _animator;
+    private SpriteRenderer _spriteRenderer;
     [Header("Movement")]
     [SerializeField] private float maxSpeed           = 13f;
     [SerializeField] private float acceleration       = 120f;
@@ -20,6 +21,7 @@ public class PlayerLocomotion : MonoBehaviour
     [SerializeField] private float jumpEndEarlyGravity = 300f;
     [SerializeField] private float groundingForce      = -1.5f;
     [SerializeField] private float grounderDistance    = 0.05f;
+    [SerializeField] private float airAcceleration = 50f;   // lower = more floaty air control
 
     [Header("Ground Check")]
     [SerializeField] private LayerMask groundLayer;
@@ -50,6 +52,8 @@ public class PlayerLocomotion : MonoBehaviour
         _rb              = GetComponent<Rigidbody2D>();
         _col             = GetComponent<CapsuleCollider2D>();
         _rb.gravityScale = 0f;
+        _animator   =GetComponentInChildren<Animator>();
+        _spriteRenderer   =GetComponentInChildren<SpriteRenderer>(); 
     }
 
     #endregion
@@ -66,6 +70,18 @@ public class PlayerLocomotion : MonoBehaviour
 
     #region Ground Detection
 
+  public void UpdateAnimation(PlayerState state)
+  {
+    if (_animator == null) return;
+
+    _logger?.Input($"Animation assigned:{_animator != null}");
+    _animator.SetFloat("Speed", Mathf.Abs(state.Velocity.x));
+    _animator.SetBool("IsGrounded", state.IsGrounded);
+    _animator.SetFloat("VerticalVelocity", state.Velocity.y);
+
+
+  
+  }
 public void CheckGround(PlayerState state)
 {
     bool originalQueriesHitTriggers = Physics2D.queriesHitTriggers;
@@ -124,27 +140,35 @@ public void CheckGround(PlayerState state)
 
     #region Horizontal Movement
 
-    public void HandleHorizontal(PlayerState state)
+   public void HandleHorizontal(PlayerState state)
+{
+    if (state.MoveInput == 0)
     {
-        if (state.MoveInput == 0)
-        {
-            // Separate decel for ground and air — matches Tarodev
-            float decel = state.IsGrounded ? groundDeceleration : airDeceleration;
-            state.Velocity.x = Mathf.MoveTowards(
-                state.Velocity.x, 0, decel * Time.fixedDeltaTime
-            );
-        }
-        else
-        {
-            state.Velocity.x = Mathf.MoveTowards(
-                state.Velocity.x,
-                state.MoveInput * maxSpeed,
-                acceleration * Time.fixedDeltaTime
-            );
-        }
-
-        _logger?.Movement($"Velocity.x: {state.Velocity.x:F2}");
+        float decel = state.IsGrounded ? groundDeceleration : airDeceleration;
+        state.Velocity.x = Mathf.MoveTowards(
+            state.Velocity.x, 0, decel * Time.fixedDeltaTime
+        );
     }
+    else
+    {
+        float accel = state.IsGrounded ? acceleration : airAcceleration;
+        state.Velocity.x = Mathf.MoveTowards(
+            state.Velocity.x,
+            state.MoveInput * maxSpeed,
+            accel * Time.fixedDeltaTime
+        );
+
+        if (_spriteRenderer != null)
+        {
+            if (state.MoveInput > 0.1f)
+                _spriteRenderer.flipX = false;
+            else if (state.MoveInput < -0.1f)
+                _spriteRenderer.flipX = true;
+        }
+    }
+
+    _logger?.Movement($"Velocity.x: {state.Velocity.x:F2}");
+}
 
     #endregion
 
