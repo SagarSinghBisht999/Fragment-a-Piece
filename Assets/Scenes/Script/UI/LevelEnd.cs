@@ -6,9 +6,7 @@ public class LevelEnd : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("LEVEL COMPLETE");
-            // For demo: just stop the game
-            // Time.timeScale = 0f;
+            GameUIController.Instance?.ShowLevelComplete();
         }
     }
 }
